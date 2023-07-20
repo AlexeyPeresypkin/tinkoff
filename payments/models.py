@@ -12,8 +12,8 @@ class Base(DeclarativeBase):
 
 
 class PayType(enum.Enum):
-    single_stage = 'O'  # одностадийная
-    two_stage = 'T'  # двухстадийная
+    SINGLE_STAGE = 'O'  # одностадийная
+    TWO_STAGE = 'T'  # двухстадийная
 
 
 class Taxation(enum.Enum):
@@ -26,135 +26,153 @@ class Taxation(enum.Enum):
 
 
 class FfdVersion(enum.Enum):
-    version_1_2 = '1.2'
-    version_1_05 = '1.05'
+    VERSION_1_2 = '1.2'
+    VERSION_1_05 = '1.05'
 
 
-class PaymentType(enum.Enum):
-    Cash = 'Cash'  # Наличные
-    Electronic = 'Electronic'  # Безналичный
-    AdvancePayment = 'AdvancePayment'  # Предварительная оплата (Аванс)
-    Credit = 'Credit'  # Постоплата (Кредит)
-    Provision = 'Provision'  # Иная форма оплаты
+# class PaymentType(enum.Enum):
+#     CASH = 'Cash'  # Наличные
+#     ELECTRONIC = 'Electronic'  # Безналичный
+#     ADVANCE_PAYMENT = 'AdvancePayment'  # Предварительная оплата (Аванс)
+#     CREDIT = 'Credit'  # Постоплата (Кредит)
+#     PROVISION = 'Provision'  # Иная форма оплаты
 
 
 class PaymentMethod(enum.Enum):
-    full_payment = 'full_payment'  # полный расчет
-    full_prepayment = 'full_prepayment'  # предоплата 100% - полная предварительная оплата (до получения товара)
-    prepayment = 'prepayment'  # предоплата - частичная предварительная оплата
-    advance = 'advance'  # аванс - предоплата в случаях, когда заранее нельзя определить перечень товаров/работ/услуг
-    partial_payment = 'partial_payment'  # частичный расчет и кредит
-    credit = 'credit'  # передача в кредит
-    credit_payment = 'credit_payment'  # оплата кредита
+    FULL_PAYMENT = 'full_payment'  # полный расчет
+    FULL_PREPAYMENT = 'full_prepayment'  # предоплата 100% - полная предварительная оплата (до получения товара)
+    PREPAYMENT = 'prepayment'  # предоплата - частичная предварительная оплата
+    ADVANCE = 'advance'  # аванс - предоплата в случаях, когда заранее нельзя определить перечень товаров/работ/услуг
+    PARTIAL_PAYMENT = 'partial_payment'  # частичный расчет и кредит
+    CREDIT = 'credit'  # передача в кредит
+    CREDIT_PAYMENT = 'credit_payment'  # оплата кредита
 
 
 class PaymentObject(enum.Enum):
-    commodity = 'commodity'  # товар
-    excise = 'excise'  # подакцизный товар
-    job = 'job'  # работа
-    service = 'service'  # услуга
-    gambling_bet = 'gambling_bet'  # ставка азартной игры
-    gambling_prize = 'gambling_prize'  # выигрыш азартной игры
-    lottery = 'lottery'  # лотерейный билет
-    lottery_prize = 'lottery_prize'  # выигрыш лотереи
-    intellectual_activity = 'intellectual_activity'  # предоставление результатов интеллектуальной деятельности
-    payment = 'payment'  # платеж
-    agent_commission = 'agent_commission'  # агентское вознаграждение
-    composite = 'composite'  # составной предмет расчета
-    another = 'another'  # иной предмет расчета
+    COMMODITY = 'commodity'  # товар
+    EXCISE = 'excise'  # подакцизный товар
+    JOB = 'job'  # работа
+    SERVICE = 'service'  # услуга
+    GAMBLING_BET = 'gambling_bet'  # ставка азартной игры
+    GAMBLING_PRIZE = 'gambling_prize'  # выигрыш азартной игры
+    LOTTERY = 'lottery'  # лотерейный билет
+    LOTTERY_PRIZE = 'lottery_prize'  # выигрыш лотереи
+    INTELLECTUAL_ACTIVITY = 'intellectual_activity'  # предоставление результатов интеллектуальной деятельности
+    PAYMENT = 'payment'  # платеж
+    AGENT_COMMISSION = 'agent_commission'  # агентское вознаграждение
+    COMPOSITE = 'composite'  # составной предмет расчета
+    ANOTHER = 'another'  # иной предмет расчета
 
 
 class Tax(enum.Enum):
-    none = 'none'  # без НДС
-    vat0 = 'vat0'  # 0%
-    vat10 = 'vat10'  # 10%
-    vat20 = 'vat20'  # 20%
-    vat110 = 'vat110'  # 10/110
-    vat120 = 'vat120'  # 20/120
+    NONE = 'none'  # без НДС
+    VAT0 = 'vat0'  # 0%
+    VAT10 = 'vat10'  # 10%
+    VAT20 = 'vat20'  # 20%
+    VAT110 = 'vat110'  # 10/110
+    VAT120 = 'vat120'  # 20/120
 
 
 class AgentSign(enum.Enum):
-    bank_paying_agent = 'bank_paying_agent'  # банковский платежный агент
-    bank_paying_subagent = 'bank_paying_subagent'  # банковский платежный субагент
-    paying_agent = 'paying_agent'  # платежный агент
-    paying_subagent = 'paying_subagent'  # платежный субагент
-    attorney = 'attorney'  # поверенный
-    commission_agent = 'commission_agent'  # комиссионер
-    another = 'another'  # другой тип агента
+    BANK_PAYING_AGENT = 'bank_paying_agent'  # банковский платежный агент
+    BANK_PAYING_SUBAGENT = 'bank_paying_subagent'  # банковский платежный субагент
+    PAYING_AGENT = 'paying_agent'  # платежный агент
+    PAYING_SUBAGENT = 'paying_subagent'  # платежный субагент
+    ATTORNEY = 'attorney'  # поверенный
+    COMMISSION_AGENT = 'commission_agent'  # комиссионер
+    ANOTHER = 'another'  # другой тип агента
 
 
 class Payments(Base):
     __tablename__ = 'payments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    TerminalKey: Mapped[str] = mapped_column(String(20))
-    Amount: Mapped[int]
-    OrderId: Mapped[str] = mapped_column(String(36))
+    terminal_key: Mapped[str] = mapped_column(String(20))
+    amount: Mapped[int]
+    order_id: Mapped[str] = mapped_column(String(36))
     ip: Mapped[Optional[str]] = mapped_column(INET)
-    Description: Mapped[str] = mapped_column(String(250))
-    # Token
-    Language: Mapped[str] = mapped_column(String(2))
-    Recurrent: Mapped[str] = mapped_column(String(1))
-    CustomerKey: Mapped[str] = mapped_column(String(36))
-    RedirectDueDate: Mapped[Optional[datetime]]
-    NotificationURL: Mapped[Optional[str]]
-    SuccessURL: Mapped[Optional[str]]
-    FailURL: Mapped[Optional[str]]
-    PayType: Mapped[PayType]
-    DATA = mapped_column(JSONB, nullable=True)
-
-    receipts: Mapped[List['Receipts']] = relationship(back_populates='payment')
+    description: Mapped[Optional[str]] = mapped_column(String(250))
+    language: Mapped[Optional[str]] = mapped_column(String(2))
+    recurrent: Mapped[str] = mapped_column(String(1), default='Y')
+    customer_key: Mapped[Optional[str]] = mapped_column(String(36))
+    redirect_due_date: Mapped[Optional[datetime]]
+    notification_url: Mapped[Optional[str]]
+    success_url: Mapped[Optional[str]]
+    fail_url: Mapped[Optional[str]]
+    pay_type: Mapped[PayType]
+    data = mapped_column(JSONB, nullable=True)
+    payment_url: Mapped[str] = mapped_column(String(100))
+    receipt: Mapped['Receipts'] = relationship(back_populates='payment', uselist=False)
 
 
 class Receipts(Base):
     __tablename__ = 'receipts'
 
-    Email: Mapped[str] = mapped_column(String(64))
-    Phone: Mapped[str] = mapped_column(String(64))
-    Taxation: Mapped[Taxation]
-    # Items = mapped_column(JSONB, nullable=True)
-    # Payments = mapped_column(JSONB, nullable=True)
-    AdditionalCheckProps: Mapped[str]
-    FfdVersion: Mapped[FfdVersion]
-    receipt_payments: Mapped[int] = mapped_column(ForeignKey('receipt_payments.id'))
+    email: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Phone
+    phone: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Email
+    taxation: Mapped[Taxation]
+    additional_check_props: Mapped[Optional[str]]
+    ffd_version: Mapped[Optional[FfdVersion]]
     payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
-
-    payment: Mapped['Payments'] = relationship(back_populates='receipts')
-    items: Mapped['Items'] = relationship(back_populates='receipt')
+    payment: Mapped['Payments'] = relationship(back_populates='receipt', uselist=False)
+    items: Mapped[List['Items']] = relationship(back_populates='receipt')
+    receipt_payment: Mapped['ReceiptPayments'] = relationship(back_populates='receipt', uselist=False)
 
 
 class ReceiptPayments(Base):
     __tablename__ = 'receipt_payments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    type: Mapped[PaymentType]
-    amount: Mapped[int]
-    receipt: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
+    electronic: Mapped[int]
+    cash: Mapped[int]
+    advance_payment: Mapped[int]
+    credit: Mapped[int]
+    provision: Mapped[int]
+    # type: # Mapped[PaymentType]
+    # amount: Mapped[int]
+    receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
+    receipt: Mapped['Receipts'] = relationship(back_populates='receipt_payment', uselist=False)
 
 
 class Items(Base):
     __tablename__ = 'items'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    Name: Mapped[str] = mapped_column(String(128))
-    Quantity: Mapped[int]
-    Amount: Mapped[int]
-    Price: Mapped[int]
-    PaymentMethod: Mapped[PaymentMethod]
-    PaymentObject: Mapped[PaymentObject]
-    Tax: Mapped[Tax]
-    Ean13: Mapped[Optional[str]] = mapped_column(String(20))
-    AgentData
-    SupplierInfo
+    name: Mapped[str] = mapped_column(String(128))
+    quantity: Mapped[int]
+    amount: Mapped[int]
+    price: Mapped[int]
+    payment_method: Mapped[Optional[PaymentMethod]]
+    payment_object: Mapped[Optional[PaymentObject]]
+    tax: Mapped[Tax]
+    ean13: Mapped[Optional[str]] = mapped_column(String(20))
+    agent: Mapped[int] = mapped_column(back_populates='item', uselist=False)
+    supplier: Mapped[int] = mapped_column(back_populates='item',
+                                          uselist=False)  # Да, если передается значение AgentSign в объекте AgentData
 
 
 class Agents(Base):
+    __tablename__ = 'agents'
+
     id: Mapped[int] = mapped_column(primary_key=True)
-    AgentSign: Mapped[Optional[AgentSign]]
-    OperationName: Mapped[Optional[str]] = mapped_column(String(64))
-    Phones: Mapped[Optional[str]]
-    ReceiverPhones: Mapped[Optional[str]]
-    TransferPhones: Mapped[Optional[str]]
-    OperatorName: Mapped[Optional[str]] = mapped_column(String(64))
-    OperatorAddress: Mapped[Optional[str]] = mapped_column(String(243))
-    OperatorInn: Mapped[Optional[str]] = mapped_column(String(12))
+    agent_sign: Mapped[Optional[AgentSign]]
+    operation_name: Mapped[Optional[str]] = mapped_column(String(64))
+    phones: Mapped[Optional[str]]
+    receiver_phones: Mapped[Optional[str]]
+    transfer_phones: Mapped[Optional[str]]
+    operator_name: Mapped[Optional[str]] = mapped_column(String(64))
+    operator_address: Mapped[Optional[str]] = mapped_column(String(243))
+    operator_inn: Mapped[Optional[str]] = mapped_column(String(12))
+    item_id: Mapped[int] = mapped_column(ForeignKey('items.id'))
+    item: Mapped['Items'] = relationship(back_populates='agent', uselist=False)
+
+
+class Suppliers(Base):
+    __tablename__ = 'supplier'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phones: Mapped[str]
+    name: Mapped[str] = mapped_column(String(239))
+    inn: Mapped[str] = mapped_column(String(12))
+    item_id: Mapped[int] = mapped_column(ForeignKey('items.id'))
+    item: Mapped['Items'] = relationship(back_populates='supplier', uselist=False)
