@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
@@ -102,21 +102,22 @@ class Payments(Base):
     pay_type: Mapped[PayType]
     data = mapped_column(JSONB, nullable=True)
     payment_url: Mapped[str] = mapped_column(String(100))
-    receipt: Mapped['Receipts'] = relationship(back_populates='payment', uselist=False)
+    receipt: Mapped['Receipts'] = relationship(back_populates='payment')
 
 
 class Receipts(Base):
     __tablename__ = 'receipts'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Phone
     phone: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Email
     taxation: Mapped[Taxation]
     additional_check_props: Mapped[Optional[str]]
     ffd_version: Mapped[Optional[FfdVersion]]
     payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
-    payment: Mapped['Payments'] = relationship(back_populates='receipt', uselist=False)
+    payment: Mapped['Payments'] = relationship(back_populates='receipt')
     items: Mapped[List['Items']] = relationship(back_populates='receipt')
-    receipt_payment: Mapped['ReceiptPayments'] = relationship(back_populates='receipt', uselist=False)
+    receipt_payment: Mapped['ReceiptPayments'] = relationship(back_populates='receipt')
 
 
 class ReceiptPayments(Base):
@@ -131,7 +132,7 @@ class ReceiptPayments(Base):
     # type: # Mapped[PaymentType]
     # amount: Mapped[int]
     receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
-    receipt: Mapped['Receipts'] = relationship(back_populates='receipt_payment', uselist=False)
+    receipt: Mapped['Receipts'] = relationship(back_populates='receipt_payment')
 
 
 class Items(Base):
@@ -146,13 +147,16 @@ class Items(Base):
     payment_object: Mapped[Optional[PaymentObject]]
     tax: Mapped[Tax]
     ean13: Mapped[Optional[str]] = mapped_column(String(20))
-    agent: Mapped[int] = mapped_column(back_populates='item', uselist=False)
-    supplier: Mapped[int] = mapped_column(back_populates='item',
-                                          uselist=False)  # Да, если передается значение AgentSign в объекте AgentData
+    agent: Mapped['Agents'] = relationship(back_populates='item')
+    supplier: Mapped['Suppliers'] = relationship(back_populates='item')
+    receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
+    receipt: Mapped['Receipts'] = relationship(back_populates='items')
+    # Да, если передается значение AgentSign в объекте AgentData
 
 
 class Agents(Base):
     __tablename__ = 'agents'
+    __table_args__ = (UniqueConstraint('item_id', 'id', name='agent_id_item_id_constr'), )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     agent_sign: Mapped[Optional[AgentSign]]
@@ -164,15 +168,16 @@ class Agents(Base):
     operator_address: Mapped[Optional[str]] = mapped_column(String(243))
     operator_inn: Mapped[Optional[str]] = mapped_column(String(12))
     item_id: Mapped[int] = mapped_column(ForeignKey('items.id'))
-    item: Mapped['Items'] = relationship(back_populates='agent', uselist=False)
+    item: Mapped['Items'] = relationship(back_populates='agent')
 
 
 class Suppliers(Base):
-    __tablename__ = 'supplier'
+    __tablename__ = 'suppliers'
+    __table_args__ = (UniqueConstraint('item_id', 'id', name='supplier_id_item_id_constr'), )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     phones: Mapped[str]
     name: Mapped[str] = mapped_column(String(239))
     inn: Mapped[str] = mapped_column(String(12))
     item_id: Mapped[int] = mapped_column(ForeignKey('items.id'))
-    item: Mapped['Items'] = relationship(back_populates='supplier', uselist=False)
+    item: Mapped['Items'] = relationship(back_populates='supplier')

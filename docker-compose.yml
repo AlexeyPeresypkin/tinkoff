@@ -3,7 +3,9 @@ version: '3.8'
 services:
   web:
     build: .
-    command: uvicorn main:app --host 0.0.0.0 --reload
+    command:
+      - alembic upgrade head
+      - uvicorn main:app --host 0.0.0.0 --reload
     volumes:
       - .:/app
     ports:
