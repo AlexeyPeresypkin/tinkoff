@@ -1,6 +1,8 @@
+aiohttp~=3.8.5
 asyncpg==0.28.0
 SQLAlchemy~=2.0.19
 fastapi~=0.100.0
 pydantic~=2.0.3
+psycopg2-binary~=2.9.6
 uvicorn~=0.23.1
 alembic~=1.11.1

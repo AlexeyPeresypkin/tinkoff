@@ -11,6 +11,8 @@ from payments.models import Base as PaymentsBase
 # access to the values within the .ini file in use.
 config = context.config
 
+# db_host = os.environ.get('POSTGRES_HOST')
+# db_port = os.environ.get('POSTGRES_PORT')
 db_host = 'localhost'
 db_port = 6433
 db_name = os.environ.get('POSTGRES_DB')

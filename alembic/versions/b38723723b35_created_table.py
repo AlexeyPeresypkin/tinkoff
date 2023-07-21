@@ -1,8 +1,8 @@
-"""created payments tables
+"""created table
 
-Revision ID: 19bffd6734b6
+Revision ID: b38723723b35
 Revises: 
-Create Date: 2023-07-21 10:35:36.484909
+Create Date: 2023-07-21 16:58:03.126783
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '19bffd6734b6'
+revision = 'b38723723b35'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,22 +28,22 @@ def upgrade() -> None:
     sa.Column('language', sa.String(length=2), nullable=True),
     sa.Column('recurrent', sa.String(length=1), nullable=False),
     sa.Column('customer_key', sa.String(length=36), nullable=True),
+    sa.Column('pay_type', sa.Enum('O', 'T', name='paytype'), nullable=False),
     sa.Column('data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('redirect_due_date', sa.DateTime(), nullable=True),
     sa.Column('notification_url', sa.String(), nullable=True),
     sa.Column('success_url', sa.String(), nullable=True),
     sa.Column('fail_url', sa.String(), nullable=True),
-    sa.Column('pay_type', sa.Enum('SINGLE_STAGE', 'TWO_STAGE', name='paytype'), nullable=False),
-    sa.Column('payment_url', sa.String(length=100), nullable=False),
+    sa.Column('payment_url', sa.String(length=100), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('receipts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=64), nullable=True),
     sa.Column('phone', sa.String(length=64), nullable=True),
-    sa.Column('taxation', sa.Enum('OSN', 'USN_INCOME', 'USN_INCOME_OUTCOME', 'PATENT', 'ENVD', 'ESN', name='taxation'), nullable=False),
     sa.Column('additional_check_props', sa.String(), nullable=True),
-    sa.Column('ffd_version', sa.Enum('VERSION_1_2', 'VERSION_1_05', name='ffdversion'), nullable=True),
+    sa.Column('taxation', sa.Enum('osn', 'usn_income', 'usn_income_outcome', 'patent', 'envd', 'esn', name='taxation'), nullable=False),
+    sa.Column('ffd_version', sa.Enum('1.2', '1.05', name='ffdversion'), nullable=True),
     sa.Column('payment_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['payment_id'], ['payments.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -51,12 +51,12 @@ def upgrade() -> None:
     op.create_table('items',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=128), nullable=False),
+    sa.Column('payment_method', sa.Enum('full_payment', 'full_prepayment', 'prepayment', 'advance', 'partial_payment', 'credit', 'credit_payment', name='paymentmethod'), nullable=True),
+    sa.Column('payment_object', sa.Enum('commodity', 'excise', 'job', 'service', 'gambling_bet', 'gambling_prize', 'lottery', 'lottery_prize', 'intellectual_activity', 'payment', 'agent_commission', 'composite', 'another', name='paymentobject'), nullable=True),
+    sa.Column('tax', sa.Enum('none', 'vat0', 'vat10', 'vat20', 'vat110', 'vat120', name='tax'), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('amount', sa.Integer(), nullable=False),
     sa.Column('price', sa.Integer(), nullable=False),
-    sa.Column('payment_method', sa.Enum('FULL_PAYMENT', 'FULL_PREPAYMENT', 'PREPAYMENT', 'ADVANCE', 'PARTIAL_PAYMENT', 'CREDIT', 'CREDIT_PAYMENT', name='paymentmethod'), nullable=True),
-    sa.Column('payment_object', sa.Enum('COMMODITY', 'EXCISE', 'JOB', 'SERVICE', 'GAMBLING_BET', 'GAMBLING_PRIZE', 'LOTTERY', 'LOTTERY_PRIZE', 'INTELLECTUAL_ACTIVITY', 'PAYMENT', 'AGENT_COMMISSION', 'COMPOSITE', 'ANOTHER', name='paymentobject'), nullable=True),
-    sa.Column('tax', sa.Enum('NONE', 'VAT0', 'VAT10', 'VAT20', 'VAT110', 'VAT120', name='tax'), nullable=False),
     sa.Column('ean13', sa.String(length=20), nullable=True),
     sa.Column('receipt_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['receipt_id'], ['receipts.id'], ),
@@ -75,7 +75,7 @@ def upgrade() -> None:
     )
     op.create_table('agents',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('agent_sign', sa.Enum('BANK_PAYING_AGENT', 'BANK_PAYING_SUBAGENT', 'PAYING_AGENT', 'PAYING_SUBAGENT', 'ATTORNEY', 'COMMISSION_AGENT', 'ANOTHER', name='agentsign'), nullable=True),
+    sa.Column('agent_sign', sa.Enum('bank_paying_agent', 'bank_paying_subagent', 'paying_agent', 'paying_subagent', 'attorney', 'commission_agent', 'another', name='agentsign'), nullable=True),
     sa.Column('operation_name', sa.String(length=64), nullable=True),
     sa.Column('phones', sa.String(), nullable=True),
     sa.Column('receiver_phones', sa.String(), nullable=True),

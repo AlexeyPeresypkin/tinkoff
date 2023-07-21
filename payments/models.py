@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import String, ForeignKey, UniqueConstraint
+from sqlalchemy import String, ForeignKey, UniqueConstraint, Enum
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
@@ -28,14 +28,6 @@ class Taxation(enum.Enum):
 class FfdVersion(enum.Enum):
     VERSION_1_2 = '1.2'
     VERSION_1_05 = '1.05'
-
-
-# class PaymentType(enum.Enum):
-#     CASH = 'Cash'  # Наличные
-#     ELECTRONIC = 'Electronic'  # Безналичный
-#     ADVANCE_PAYMENT = 'AdvancePayment'  # Предварительная оплата (Аванс)
-#     CREDIT = 'Credit'  # Постоплата (Кредит)
-#     PROVISION = 'Provision'  # Иная форма оплаты
 
 
 class PaymentMethod(enum.Enum):
@@ -83,6 +75,11 @@ class AgentSign(enum.Enum):
     ANOTHER = 'another'  # другой тип агента
 
 
+class Language(enum.Enum):
+    RU = 'ru'
+    EN = 'en'
+
+
 class Payments(Base):
     __tablename__ = 'payments'
 
@@ -92,16 +89,16 @@ class Payments(Base):
     order_id: Mapped[str] = mapped_column(String(36))
     ip: Mapped[Optional[str]] = mapped_column(INET)
     description: Mapped[Optional[str]] = mapped_column(String(250))
-    language: Mapped[Optional[str]] = mapped_column(String(2))
+    language = mapped_column(Enum(Language, values_callable=lambda obj: [e.value for e in obj]))
     recurrent: Mapped[str] = mapped_column(String(1), default='Y')
     customer_key: Mapped[Optional[str]] = mapped_column(String(36))
     redirect_due_date: Mapped[Optional[datetime]]
     notification_url: Mapped[Optional[str]]
     success_url: Mapped[Optional[str]]
     fail_url: Mapped[Optional[str]]
-    pay_type: Mapped[PayType]
-    data = mapped_column(JSONB, nullable=True)
-    payment_url: Mapped[str] = mapped_column(String(100))
+    pay_type = mapped_column(Enum(PayType, values_callable=lambda obj: [e.value for e in obj]))
+    data = mapped_column(JSONB)
+    payment_url: Mapped[Optional[str]] = mapped_column(String(100))
     receipt: Mapped['Receipts'] = relationship(back_populates='payment')
 
 
@@ -111,9 +108,9 @@ class Receipts(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Phone
     phone: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Email
-    taxation: Mapped[Taxation]
+    taxation = mapped_column(Enum(Taxation, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     additional_check_props: Mapped[Optional[str]]
-    ffd_version: Mapped[Optional[FfdVersion]]
+    ffd_version = mapped_column(Enum(FfdVersion, values_callable=lambda obj: [e.value for e in obj]))
     payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
     payment: Mapped['Payments'] = relationship(back_populates='receipt')
     items: Mapped[List['Items']] = relationship(back_populates='receipt')
@@ -143,9 +140,9 @@ class Items(Base):
     quantity: Mapped[int]
     amount: Mapped[int]
     price: Mapped[int]
-    payment_method: Mapped[Optional[PaymentMethod]]
-    payment_object: Mapped[Optional[PaymentObject]]
-    tax: Mapped[Tax]
+    payment_method = mapped_column(Enum(PaymentMethod, values_callable=lambda obj: [e.value for e in obj]))
+    payment_object = mapped_column(Enum(PaymentObject, values_callable=lambda obj: [e.value for e in obj]))
+    tax = mapped_column(Enum(Tax, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     ean13: Mapped[Optional[str]] = mapped_column(String(20))
     agent: Mapped['Agents'] = relationship(back_populates='item')
     supplier: Mapped['Suppliers'] = relationship(back_populates='item')
@@ -156,10 +153,10 @@ class Items(Base):
 
 class Agents(Base):
     __tablename__ = 'agents'
-    __table_args__ = (UniqueConstraint('item_id', 'id', name='agent_id_item_id_constr'), )
+    __table_args__ = (UniqueConstraint('item_id', 'id', name='agent_id_item_id_constr'),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    agent_sign: Mapped[Optional[AgentSign]]
+    agent_sign = mapped_column(Enum(AgentSign, values_callable=lambda obj: [e.value for e in obj]))
     operation_name: Mapped[Optional[str]] = mapped_column(String(64))
     phones: Mapped[Optional[str]]
     receiver_phones: Mapped[Optional[str]]
@@ -173,7 +170,7 @@ class Agents(Base):
 
 class Suppliers(Base):
     __tablename__ = 'suppliers'
-    __table_args__ = (UniqueConstraint('item_id', 'id', name='supplier_id_item_id_constr'), )
+    __table_args__ = (UniqueConstraint('item_id', 'id', name='supplier_id_item_id_constr'),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     phones: Mapped[str]
