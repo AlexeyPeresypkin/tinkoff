@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import String, ForeignKey, UniqueConstraint, Enum
+from sqlalchemy import String, ForeignKey, UniqueConstraint, Enum, DateTime, func, BigInteger
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
@@ -75,6 +75,12 @@ class AgentSign(enum.Enum):
     ANOTHER = 'another'  # другой тип агента
 
 
+class PaymentStatus(enum.Enum):
+    NEW = 'new'
+    PAID = 'paid'
+    CANCELED = 'canceled'
+
+
 class Language(enum.Enum):
     RU = 'ru'
     EN = 'en'
@@ -84,6 +90,8 @@ class Payments(Base):
     __tablename__ = 'payments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    created = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated = mapped_column(DateTime(timezone=True), onupdate=func.now())
     terminal_key: Mapped[str] = mapped_column(String(20))
     amount: Mapped[int]
     order_id: Mapped[str] = mapped_column(String(36))
@@ -92,14 +100,34 @@ class Payments(Base):
     language = mapped_column(Enum(Language, values_callable=lambda obj: [e.value for e in obj]))
     recurrent: Mapped[str] = mapped_column(String(1), default='Y')
     customer_key: Mapped[Optional[str]] = mapped_column(String(36))
-    redirect_due_date: Mapped[Optional[datetime]]
+    redirect_due_date = mapped_column(DateTime(timezone=True))
     notification_url: Mapped[Optional[str]]
     success_url: Mapped[Optional[str]]
     fail_url: Mapped[Optional[str]]
     pay_type = mapped_column(Enum(PayType, values_callable=lambda obj: [e.value for e in obj]))
     data = mapped_column(JSONB)
-    payment_url: Mapped[Optional[str]] = mapped_column(String(100))
+    payment_url: Mapped[str] = mapped_column(String(100))
+    payment_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus, values_callable=lambda obj: [e.value for e in obj]),
+        server_default=PaymentStatus.NEW.value)
     receipt: Mapped['Receipts'] = relationship(back_populates='payment')
+    cancelled_payments: Mapped[Optional['CancelledPayments']] = relationship(back_populates='payment')
+
+
+class CancelledPayments(Base):
+    __tablename__ = 'cancelled_payments'
+
+    created = mapped_column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    terminal_key: Mapped[str] = mapped_column(String(20))
+    payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
+    amount: Mapped[int]
+    status: Mapped[str]
+    original_amount: Mapped[int]
+    new_amount: Mapped[int]
+    payment: Mapped['Payments'] = relationship(back_populates='cancelled_payments')
+    receipt: Mapped[Optional['Receipts']] = relationship(back_populates='cancelled_payment')
 
 
 class Receipts(Base):
@@ -111,10 +139,12 @@ class Receipts(Base):
     taxation = mapped_column(Enum(Taxation, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     additional_check_props: Mapped[Optional[str]]
     ffd_version = mapped_column(Enum(FfdVersion, values_callable=lambda obj: [e.value for e in obj]))
-    payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
-    payment: Mapped['Payments'] = relationship(back_populates='receipt')
+    payment_id: Mapped[Optional[int]] = mapped_column(ForeignKey('payments.id'))
+    cancelled_payment_id: Mapped[Optional[int]] = mapped_column(ForeignKey('cancelled_payments.id'))
+    payment: Mapped[Optional['Payments']] = relationship(back_populates='receipt')
+    cancelled_payment: Mapped[Optional['CancelledPayments']] = relationship(back_populates='receipt')
     items: Mapped[List['Items']] = relationship(back_populates='receipt')
-    receipt_payment: Mapped['ReceiptPayments'] = relationship(back_populates='receipt')
+    receipt_payment: Mapped[Optional['ReceiptPayments']] = relationship(back_populates='receipt')
 
 
 class ReceiptPayments(Base):
@@ -126,8 +156,6 @@ class ReceiptPayments(Base):
     advance_payment: Mapped[int]
     credit: Mapped[int]
     provision: Mapped[int]
-    # type: # Mapped[PaymentType]
-    # amount: Mapped[int]
     receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
     receipt: Mapped['Receipts'] = relationship(back_populates='receipt_payment')
 
@@ -144,11 +172,10 @@ class Items(Base):
     payment_object = mapped_column(Enum(PaymentObject, values_callable=lambda obj: [e.value for e in obj]))
     tax = mapped_column(Enum(Tax, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     ean13: Mapped[Optional[str]] = mapped_column(String(20))
-    agent: Mapped['Agents'] = relationship(back_populates='item')
-    supplier: Mapped['Suppliers'] = relationship(back_populates='item')
+    agent: Mapped[Optional['Agents']] = relationship(back_populates='item')
+    supplier: Mapped[Optional['Suppliers']] = relationship(back_populates='item')
     receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.id'))
     receipt: Mapped['Receipts'] = relationship(back_populates='items')
-    # Да, если передается значение AgentSign в объекте AgentData
 
 
 class Agents(Base):
