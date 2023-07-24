@@ -47,7 +47,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('terminal_key', sa.String(length=20), nullable=False),
     sa.Column('payment_id', sa.Integer(), nullable=False),
-    sa.Column('amount', sa.Integer(), nullable=False),
+    sa.Column('amount', sa.Integer(), nullable=True),
     sa.Column('payment_status', sa.String(), nullable=False),
     sa.Column('original_amount', sa.Integer(), nullable=False),
     sa.Column('new_amount', sa.Integer(), nullable=False),
