@@ -4,37 +4,47 @@ from datetime import datetime
 from fastapi import status
 from pydantic import BaseModel, Field, field_validator
 
-from models.payments import PayType, AgentSign, PaymentMethod, PaymentObject, Tax, Taxation, FfdVersion
+from models.payments import (
+    PayType,
+    AgentSign,
+    PaymentMethod,
+    PaymentObject,
+    Tax,
+    Taxation,
+    FfdVersion,
+)
 
 
-class Agent(BaseModel):
+class PhonesMixin(BaseModel):
+    phones: list[str] | None = None
+
+
+class Agent(PhonesMixin):
     agent_sign: AgentSign | None = None
     operation_name: str | None = Field(None, max_length=64)
-    phones: list[str] | None = None
     receiver_phones: list[str] | None = None
     transfer_phones: list[str] | None = None
     operator_name: str | None = Field(None, max_length=64)
     operator_address: str | None = Field(None, max_length=243)
     operator_inn: str | None = Field(None, max_length=12)
 
-    @field_validator('operator_inn')
+    @field_validator("operator_inn")
     def operator_inn_validate(cls, v):
-        pattern = '^(\\d{10}|\\d{12})$'
+        pattern = "^(\\d{10}|\\d{12})$"
         if not re.search(pattern, v):
-            raise ValueError('operator_inn must be 10 or 12 digits')
+            raise ValueError("operator_inn must be 10 or 12 digits")
         return v
 
 
-class Supplier(BaseModel):
-    phones: list[str] | None = None
+class Supplier(PhonesMixin):
     name: str | None = Field(None, max_length=239)
     inn: str | None = Field(None, max_length=12)
 
-    @field_validator('inn')
+    @field_validator("inn")
     def inn_validate(cls, v):
-        pattern = '^(\\d{10}|\\d{12})$'
+        pattern = "^(\\d{10}|\\d{12})$"
         if not re.search(pattern, v):
-            raise ValueError('inn must be 10 or 12 digits')
+            raise ValueError("inn must be 10 or 12 digits")
         return v
 
 
@@ -122,35 +132,29 @@ schema_400 = {
     "content": {
         "application/json": {
             "examples": {
-                'Bad request': {
-                    "value": {
-                        "detail": 'Информация об ошибке'
-                    },
+                "Bad request": {
+                    "value": {"detail": "Информация об ошибке"},
                 }
             },
         },
-    }
+    },
 }
 
 schema_404 = {
     "content": {
         "application/json": {
             "examples": {
-                'Not Found': {
-                    "value": {
-                        "detail": 'Not Found'
-                    },
+                "Not Found": {
+                    "value": {"detail": "Not Found"},
                 }
             },
         },
     }
 }
 
-bad_request_common = {
-    status.HTTP_400_BAD_REQUEST: schema_400
-}
+bad_request_common = {status.HTTP_400_BAD_REQUEST: schema_400}
 
 bad_request_with_404 = {
     status.HTTP_400_BAD_REQUEST: schema_400,
-    status.HTTP_404_NOT_FOUND: schema_404
+    status.HTTP_404_NOT_FOUND: schema_404,
 }

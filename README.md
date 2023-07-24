@@ -1,8 +1,8 @@
-Первые три задачи находятся в файле [extra_tasks.py](extra_tasks.py)
+Первые три задачи находятся в файле [extra_tasks.py](extra_tasks/extra_tasks.py)
 
 Деплой проекта
 ============
-1. Создать файл `.env` по примеру [env_example](env_example)
+1. Создать файл `.env` в корневом каталоге по примеру [env_example](env_example)
 2. Запустить контейнеры командой `docker-compose up -d --build`
 
 Приложение готово, документация проекта доступна по адресу http://localhost:8001/docs#/
