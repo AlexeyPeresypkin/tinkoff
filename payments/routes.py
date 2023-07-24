@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import get_async_session
+from db.postgresql import get_async_session
 from payments import schemas, utils, models
+from services.get_service import get_payment_service
+from services.payment import PaymentService
 
-router = APIRouter(prefix='/payments', tags=['Платежи'])
+router = APIRouter(tags=['Платежи'])
 
 
 @router.post('/init',
@@ -12,21 +14,24 @@ router = APIRouter(prefix='/payments', tags=['Платежи'])
              response_model=schemas.PaymentRead,
              responses=schemas.bad_request_common,
              description='Создание платежа')
-async def post_init(payment_create: schemas.PaymentCreate, db: AsyncSession = Depends(get_async_session)):
-    url = 'https://securepay.tinkoff.ru/v2/Init'
-    payload = utils.get_payload(payment_create.model_dump())
-    response = await utils.get_response_or_400(url, payload)
-    data = payment_create.model_dump()
-    receipt = data.pop('receipt', None)
-    payment = models.Payments(
-        **data,
-        payment_id=int(response.get('PaymentId')),
-        payment_url=response.get('PaymentURL'),
-        payment_status=response.get('Status'))
-    db.add(payment)
-    await db.flush()
-    await utils.create_receipt(db, payment, receipt)
-    await db.commit()
+async def post_init(payment_create: schemas.PaymentCreate,
+                    payment_service: PaymentService = Depends(get_payment_service),
+                    db: AsyncSession = Depends(get_async_session)):
+    payment = await payment_service.create_payment(payment_create)
+    # url = 'https://securepay.tinkoff.ru/v2/Init'
+    # payload = utils.get_payload(payment_create.model_dump())
+    # response = await utils.get_response_or_400(url, payload)
+    # data = payment_create.model_dump()
+    # receipt = data.pop('receipt', None)
+    # payment = models.Payments(
+    #     **data,
+    #     payment_id=int(response.get('PaymentId')),
+    #     payment_url=response.get('PaymentURL'),
+    #     payment_status=response.get('Status'))
+    # db.add(payment)
+    # await db.flush()
+    # await utils.create_receipt(db, payment, receipt)
+    # await db.commit()
     return schemas.PaymentRead.model_validate(payment)
 
 
@@ -61,7 +66,8 @@ async def post_payment_status(payment_status: schemas.PaymentStatusCreate,
              response_model=schemas.PaymentStatusRead,
              responses=schemas.bad_request_with_404,
              description='Отмена платежа')
-async def post_payment_cancel(cancel_payment: schemas.CancelPaymentCreate, db: AsyncSession = Depends(get_async_session)):
+async def post_payment_cancel(cancel_payment: schemas.CancelPaymentCreate,
+                              db: AsyncSession = Depends(get_async_session)):
     url = 'https://securepay.tinkoff.ru/v2/Cancel'
     payment = await utils.get_payment_or_404(db, cancel_payment.payment_id)
     payload = utils.get_payload(cancel_payment.model_dump())

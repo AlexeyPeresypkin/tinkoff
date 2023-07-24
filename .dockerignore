@@ -1,0 +1,9 @@
+etl
+db_init
+venv
+nginx
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python

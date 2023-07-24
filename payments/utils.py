@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from payments import models
 
-# TERMINAL_PASSWORD = 'TinkoffBankTest'
 headers = {'content-type': 'application/json'}
 
 TERMINAL_PASSWORD = os.getenv('TERMINAL_PASSWORD')
@@ -35,7 +34,7 @@ def normalize_value(value):
     return value
 
 
-def get_token(data: dict):
+def get_token(data: dict) -> str:
     data = data.copy()
     exclude_keys = ('Receipt', 'DATA')
     data.update({"Password": TERMINAL_PASSWORD})
@@ -52,7 +51,7 @@ def to_camel(string: str) -> str:
                                               else word.upper() for word in string.split('_'))
 
 
-def get_camel_case_data(data: dict):
+def get_camel_case_data(data: dict) -> dict:
     # Конвертируем ключи payload в camel_case стиль для запроса
     for key in list(data):
         data_key = data.pop(key)
@@ -111,7 +110,7 @@ def create_supplier(db: AsyncSession, item: models.Items, supplier: dict | None)
         db.add(supplier)
 
 
-async def create_items(db: AsyncSession, receipt: models.Receipts, items: list[dict] | None):
+async def create_items(db: AsyncSession, receipt: models.Receipts, items: list[dict] | None) -> None:
     if items:
         for item in items:
             agent = item.pop('agent', None)
