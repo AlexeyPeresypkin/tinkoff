@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, date, time
 from enum import Enum
 from hashlib import sha256
@@ -10,11 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from payments import models
 
-TERMINAL_PASSWORD = 'TinkoffBankTest'
+# TERMINAL_PASSWORD = 'TinkoffBankTest'
 headers = {'content-type': 'application/json'}
 
+TERMINAL_PASSWORD = os.getenv('TERMINAL_PASSWORD')
 
-# TERMINAL_PASSWORD = os.getenv('TERMINAL_PASSWORD')
 
 def default(obj):
     if isinstance(obj, (datetime, date, time)):
@@ -85,7 +86,7 @@ async def get_response_or_400(url: str, payload: json) -> dict:
         if not response.get('Success'):
             message = response.get('Message')
             details = response.get('Details')
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'{message} {details}')
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'{message}: {details}')
         return response
 
 
@@ -147,3 +148,10 @@ async def get_payment_or_404(db: AsyncSession, payment_id: int) -> models.Paymen
     if payment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return payment
+
+
+async def update_payment_status_or_none(db: AsyncSession, payment: models.Payments, payment_status: str):
+    if payment.payment_status != payment_status:
+        payment.payment_status = payment_status
+        db.add(payment)
+        await db.commit()

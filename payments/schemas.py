@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 
+from fastapi import status
 from pydantic import BaseModel, Field, field_validator
 
 from payments import models
@@ -93,21 +94,14 @@ class PaymentRead(BaseModel):
         from_attributes = True
 
 
-class CancelPayment(BaseModel):
+class CancelPaymentCreate(BaseModel):
     terminal_key: str = Field(max_length=20)
     payment_id: int
-    amount: int = Field(gt=0, le=9999999999)
+    amount: int | None = Field(None, ge=100, le=9999999999)
     receipt: Receipt | None = None
 
 
-class CancelPaymentRead(BaseModel):
-    status: str
-
-    class Config:
-        from_attributes = True
-
-
-class PaymentStatus(BaseModel):
+class PaymentStatusCreate(BaseModel):
     terminal_key: str = Field(max_length=20)
     payment_id: int
 
@@ -117,3 +111,46 @@ class PaymentStatusRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ErrorModel(BaseModel):
+    detail: str
+
+
+schema_400 = {
+    "model": ErrorModel,
+    "content": {
+        "application/json": {
+            "examples": {
+                'Bad request': {
+                    "value": {
+                        "detail": 'Информация об ошибке'
+                    },
+                }
+            },
+        },
+    }
+}
+
+schema_404 = {
+    "content": {
+        "application/json": {
+            "examples": {
+                'Not Found': {
+                    "value": {
+                        "detail": 'Not Found'
+                    },
+                }
+            },
+        },
+    }
+}
+
+bad_request_common = {
+    status.HTTP_400_BAD_REQUEST: schema_400
+}
+
+bad_request_with_404 = {
+    status.HTTP_400_BAD_REQUEST: schema_400,
+    status.HTTP_404_NOT_FOUND: schema_404
+}

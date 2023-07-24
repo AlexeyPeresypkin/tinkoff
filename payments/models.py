@@ -1,5 +1,4 @@
 import enum
-from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy import String, ForeignKey, UniqueConstraint, Enum, DateTime, func, BigInteger
@@ -75,12 +74,6 @@ class AgentSign(enum.Enum):
     ANOTHER = 'another'  # другой тип агента
 
 
-class PaymentStatus(enum.Enum):
-    NEW = 'new'
-    PAID = 'paid'
-    CANCELED = 'canceled'
-
-
 class Language(enum.Enum):
     RU = 'ru'
     EN = 'en'
@@ -108,9 +101,7 @@ class Payments(Base):
     data = mapped_column(JSONB)
     payment_url: Mapped[str] = mapped_column(String(100))
     payment_id: Mapped[int] = mapped_column(BigInteger, index=True)
-    payment_status: Mapped[PaymentStatus] = mapped_column(
-        Enum(PaymentStatus, values_callable=lambda obj: [e.value for e in obj]),
-        server_default=PaymentStatus.NEW.value)
+    payment_status: Mapped[Optional[str]] = mapped_column(String(20))
     receipt: Mapped['Receipts'] = relationship(back_populates='payment')
     cancelled_payments: Mapped[Optional['CancelledPayments']] = relationship(back_populates='payment')
 
@@ -122,8 +113,8 @@ class CancelledPayments(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     terminal_key: Mapped[str] = mapped_column(String(20))
     payment_id: Mapped[int] = mapped_column(ForeignKey('payments.id'))
-    amount: Mapped[int]
-    status: Mapped[str]
+    amount: Mapped[Optional[int]]
+    payment_status: Mapped[str]
     original_amount: Mapped[int]
     new_amount: Mapped[int]
     payment: Mapped['Payments'] = relationship(back_populates='cancelled_payments')
@@ -134,8 +125,8 @@ class Receipts(Base):
     __tablename__ = 'receipts'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Phone
-    phone: Mapped[Optional[str]] = mapped_column(String(64))  # Нет, если передан параметр Email
+    email: Mapped[Optional[str]] = mapped_column(String(64))
+    phone: Mapped[Optional[str]] = mapped_column(String(64))
     taxation = mapped_column(Enum(Taxation, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     additional_check_props: Mapped[Optional[str]]
     ffd_version = mapped_column(Enum(FfdVersion, values_callable=lambda obj: [e.value for e in obj]))
