@@ -1,9 +1,14 @@
 import os
 from logging import config as logging_config
+
 from pydantic.fields import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Корень проекта
+from core.logger import LOGGING
+
+logging_config.dictConfig(LOGGING)
+
+# Корень проекта /src
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
